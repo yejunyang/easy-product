@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+
+    <context:component-scan base-package="ai.yunxi.front"/>
+
+    <context:property-placeholder location="classpath:conf/*.properties"/>
+
+    <!-- 连接redis单机版 -->
+    <bean id="jedisClientPool" class="ai.yunxi.common.redis.JedisClientPool">
+        <property name="jedisPool" ref="jedisPool"></property>
+    </bean>
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="host" value="192.168.56.105"/>
+        <constructor-arg name="port" value="6379"/>
+    </bean>
+
+    <!-- 资源映射 -->
+    <mvc:resources mapping="/swagger/**" location="/swagger/"/>
+
+    <!-- 引用dubbo服务 -->
+    <dubbo:application name="ec-front">
+        <dubbo:parameter key="qos.port" value="33337"/>
+    </dubbo:application>
+    <dubbo:registry protocol="zookeeper" address="192.168.56.105:2181"/>
+
+    <dubbo:reference id="contentService" interface="ai.yunxi.content.service.ContentService"/>
+    <dubbo:reference id="searchService" interface="ai.yunxi.search.service.SearchService"/>
+    <dubbo:reference id="registerService" interface="ai.yunxi.sso.service.RegisterService"/>
+    <dubbo:reference id="loginService" interface="ai.yunxi.sso.service.LoginService"/>
+    <dubbo:reference id="cartService" interface="ai.yunxi.sso.service.CartService"/>
+    <dubbo:reference id="orderService" interface="ai.yunxi.sso.service.OrderService"/>
+    <dubbo:reference id="addressService" interface="ai.yunxi.sso.service.AddressService"/>
+    <dubbo:reference id="memberService" interface="ai.yunxi.sso.service.MemberService"/>
+</beans>

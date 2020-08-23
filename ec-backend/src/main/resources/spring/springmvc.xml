@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <aop:aspectj-autoproxy/>
+
+    <context:component-scan base-package="ai.yunxi.*"/>
+
+    <!-- task任务扫描注解 -->
+    <task:annotation-driven/>
+
+    <!-- 连接redis单机版 -->
+    <bean id="jedisClientPool" class="ai.yunxi.common.redis.JedisClientPool">
+        <property name="jedisPool" ref="jedisPool"></property>
+    </bean>
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="host" value="192.168.56.105"/>
+        <constructor-arg name="port" value="6379"/>
+    </bean>
+
+    <!-- 配置自定义Realm -->
+    <bean id="realm" class="ai.yunxi.backend.shiro.Realm"/>
+
+    <!-- 安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="realm"/>
+    </bean>
+
+    <bean id="perms" class="ai.yunxi.backend.shiro.PermissionFilter"/>
+
+    <!-- Shiro过滤器核心-->
+    <bean id="shiroFilter" class="ai.yunxi.backend.shiro.ShiroFilterFactoryBean">
+        <!-- Shiro的核心安全接口,这个属性是必须的 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 身份认证失败跳转到登录页面 -->
+        <property name="loginUrl" value="/login"/>
+        <!-- 登录成功后跳转页面 -->
+        <property name="successUrl" value="/"/>
+        <!-- 权限认证失败跳转页面 -->
+        <property name="unauthorizedUrl" value="/403"/>
+        <!--自定义过滤器-->
+        <property name="filters">
+            <util:map>
+                <entry key="perms" value-ref="perms"></entry>
+                <entry key="roles" value-ref="perms"></entry>
+            </util:map>
+        </property>
+        <!-- Shiro过滤链定义 -->
+        <property name="filterChainDefinitions">
+            <value>
+                <!--anon 表示不需要认证以及授权-->
+                <!--authc 表示需要认证 没有登录是不能进行访问的-->
+                <!--perms 表示需要该权限才能访问的页面 /user/* = perms[/*] -->
+                <!--roles 表示需要角色才能访问的页面 /* = roles[管理员]-->
+                <!--/login = anon
+                /401 = ano
+                / = authc
+                /index = authc
+                /welcome = authc
+                /lock-screen = authc
+                /user/logout = authc
+                /user/userInfo = authc-->
+            </value>
+        </property>
+    </bean>
+
+    <!-- Shiro生命周期处理器 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+    <!-- 开启Shiro注解 -->
+    <!--<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>-->
+
+    <!-- AOP式方法级权限检查 -->
+    <!--<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor">
+        <property name="proxyTargetClass" value="true" />
+    </bean>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager" />
+    </bean>-->
+
+    <!--SpringMVC视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--配置资源映射-->
+    <mvc:resources mapping="/lib/**" location="/lib/"/>
+    <mvc:resources mapping="/static/**" location="/static/"/>
+    <mvc:resources mapping="/temp/**" location="/temp/"/>
+    <mvc:resources mapping="/icon/**" location="/icon/"/>
+    <mvc:resources mapping="/upload/**" location="/upload/"/>
+
+    <dubbo:application name="ec-backend-web">
+        <dubbo:parameter key="qos.port" value="33338"/>
+    </dubbo:application>
+    <dubbo:registry protocol="zookeeper" address="192.168.56.105:2181"/>
+    <!-- Consumer -->
+    <dubbo:reference interface="ai.yunxi.core.service.ItemService" id="itemService">
+        <dubbo:method name="" actives="10" />
+    </dubbo:reference>
+    <dubbo:reference interface="ai.yunxi.core.service.MemberService" id="memberService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.ItemCatService" id="itemCatService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.UserService" id="userService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.OrderService" id="orderService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.SystemService" id="systemService"/>
+    <dubbo:reference interface="ai.yunxi.content.service.ContentService" id="contentService"/>
+    <dubbo:reference interface="ai.yunxi.content.service.PanelService" id="panelService"/>
+    <dubbo:reference interface="ai.yunxi.search.service.SearchItemService" id="searchItemService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.DictService" id="dictService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.ExpressService" id="expressService"/>
+    <dubbo:reference interface="ai.yunxi.core.service.CountService" id="countService"/>
+</beans>

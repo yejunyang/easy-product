@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+	http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <context:component-scan base-package="ai.yunxi.sso.service"/>
+
+    <dubbo:application name="ec-sso">
+        <dubbo:parameter key="qos.port" value="33335"/>
+    </dubbo:application>
+    <dubbo:registry protocol="zookeeper" address="192.168.56.105:2181"/>
+    <dubbo:protocol name="dubbo" port="20889"/>
+
+    <!-- 暴露的服务接口 -->
+    <dubbo:service interface="ai.yunxi.sso.service.LoginService"
+                   ref="loginServiceImpl" timeout="10000">
+        <dubbo:method name="userLogin" connections="10" />
+    </dubbo:service>
+    <dubbo:service interface="ai.yunxi.sso.service.RegisterService"
+                   ref="registerServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.sso.service.CartService"
+                   ref="cartServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.sso.service.OrderService"
+                   ref="orderServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.sso.service.AddressService"
+                   ref="addressServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.sso.service.MemberService"
+                   ref="memberServiceImpl" timeout="10000"/>
+</beans>

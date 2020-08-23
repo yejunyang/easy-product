@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--配置包扫描器-->
+    <context:component-scan base-package="ai.yunxi.search"/>
+
+    <dubbo:application name="ec-search">
+        <dubbo:parameter key="qos.port" value="33336"/>
+    </dubbo:application>
+    <dubbo:registry protocol="zookeeper" address="192.168.56.105:2181"/>
+
+    <dubbo:protocol name="dubbo" port="20886"/>
+
+    <!-- 暴露的服务接口 -->
+    <dubbo:service interface="ai.yunxi.search.service.SearchService"
+                   ref="searchServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.search.service.SearchItemService"
+                   ref="searchItemServiceImpl" timeout="10000"/>
+</beans>

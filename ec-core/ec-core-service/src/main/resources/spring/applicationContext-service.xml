@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+                        http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!--配置包扫描器-->
+    <context:component-scan base-package="ai.yunxi.core.service"/>
+
+    <!--异步与定时任务扫描注解-->
+    <task:executor id="taskExecutor" pool-size="100-10000" queue-capacity="10"/>
+    <task:annotation-driven executor="taskExecutor"/>
+
+    <dubbo:application name="ec-core">
+        <dubbo:parameter key="qos.port" value="33333"/>
+    </dubbo:application>
+    <dubbo:registry protocol="zookeeper" address="192.168.56.105:2181"/>
+    <dubbo:protocol name="dubbo" port="20880"/>
+
+    <!-- 暴露的服务接口 -->
+    <dubbo:service interface="ai.yunxi.core.service.ItemService"
+                   ref="itemServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.MemberService"
+                   ref="memberServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.ItemCatService"
+                   ref="itemCatServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.UserService"
+                   ref="userServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.OrderService"
+                   ref="orderServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.SystemService"
+                   ref="systemServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.DictService"
+                   ref="dictServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.ExpressService"
+                   ref="expressServiceImpl" timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.core.service.CountService"
+                   ref="countServiceImpl" timeout="10000"/>
+</beans>

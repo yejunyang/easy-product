@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+	   http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--包扫描器-->
+    <context:component-scan base-package="ai.yunxi.content.service"/>
+
+    <dubbo:application name="ec-content">
+        <dubbo:parameter key="qos.port" value="33334"/>
+    </dubbo:application>
+    <dubbo:registry protocol="zookeeper" address="192.168.56.105:2181"/>
+    <!-- 暴露服务 -->
+    <dubbo:protocol name="dubbo" port="20882"/>
+
+    <!-- 声明需要暴露的服务接口 -->
+    <dubbo:service interface="ai.yunxi.content.service.PanelService" ref="panelServiceImpl"
+                   timeout="10000"/>
+    <dubbo:service interface="ai.yunxi.content.service.ContentService" ref="contentServiceImpl"
+                   timeout="10000"/>
+</beans>
